@@ -1,13 +1,15 @@
-# AriaNg Native
-[![License](https://img.shields.io/github/license/mayswind/AriaNg-Native.svg?style=flat)](https://github.com/mayswind/AriaNg-Native/blob/master/LICENSE)
-[![Lastest Release](https://img.shields.io/github/release/mayswind/AriaNg-Native.svg?style=flat)](https://github.com/mayswind/AriaNg-Native/releases)
+# AriaNg Native (Linux Port)
 
 ## Introduction
-AriaNg Native is a desktop application built by [Electron](https://github.com/electron/electron), with all features of [AriaNg](https://github.com/mayswind/AriaNg). You can run AriaNg Native on Windows or macOS without any browser. In addition, AriaNg Native also has many features that [AriaNg](https://github.com/mayswind/AriaNg) cannot implement.
+This is an **unofficial Linux port** of [AriaNg Native](https://github.com/mayswind/AriaNg-Native) - a desktop application built by [Electron](https://github.com/electron/electron), with all features of [AriaNg](https://github.com/mayswind/AriaNg).
 
-#### Extra features
+**Original repository:** [https://github.com/mayswind/AriaNg-Native](https://github.com/mayswind/AriaNg-Native)
+
+AriaNg Native allows you to run AriaNg on Linux without any browser, and provides many additional desktop-specific features that the web version of [AriaNg](https://github.com/mayswind/AriaNg) cannot implement.
+
+## Extra features
 1. More user-friendly interface
-    * Create new task by draging-and-droping file or url
+    * Create new task by dragging-and-dropping file or url
     * Show torrent file information and choose download file before creating task
     * Play sound after download finished
 2. Command line arguments, supporting creating new task by opening file
@@ -20,57 +22,36 @@ AriaNg Native is a desktop application built by [Electron](https://github.com/el
 ## Introduction of AriaNg
 Please visit [https://github.com/mayswind/AriaNg](https://github.com/mayswind/AriaNg) for more information.
 
-## Screenshots
-#### Windows
-![AriaNg Native](https://raw.githubusercontent.com/mayswind/AriaNg-WebSite/master/screenshots/ariang_native_windows.png)
-
-#### macOS
-![AriaNg Native](https://raw.githubusercontent.com/mayswind/AriaNg-WebSite/master/screenshots/ariang_native_macos.png)
-
 ## Command Line
 
 ```
-Usage: AriaNg Native.exe [file] [options]
+Usage: AriaNg_Native-Linux-x86_64.appimage [file] [options]
 
 Commands:
-  AriaNg Native.exe new [file]  Create new download task from exist
-                                torrent/metalink file                  [default]
+  new [file]  Create new download task from exist torrent/metalink file [default]
 
 Options:
   --version, -v      Show version number                               [boolean]
   --help, -h                                                           [boolean]
   --development, -d  Enable Debug Mode                                 [boolean]
-  --classic, -c      Use classic window title bar (for Windows only)   [boolean]
   --minimal, -m      Hide the main window at startup                   [boolean]
 ```
 
 ## Installation
 #### Prebuilt release
-Latest Release: [https://github.com/mayswind/AriaNg-Native/releases](https://github.com/mayswind/AriaNg-Native/releases)
+Latest Release: [https://github.com/marsianna4ka/AriaNg-Native-Linux/releases](https://github.com/marsianna4ka/AriaNg-Native-Linux/releases)
 
-> **For mac with Apple silicon**  
-> Before starting to install, you need to execute the following command, otherwise the system will show you the file is damaged.
-> 
->     $ xattr -r -d com.apple.quarantine AriaNg_Native-macOS-arm64.dmg
+Available builds:
+- `AriaNg_Native-Linux-x86_64.appimage`
+- `AriaNg_Native-Linux-arm64.appimage`
 
 #### Building from source
 Make sure you have [Node.js](https://nodejs.org/) and [NPM](https://www.npmjs.com/) installed. Then download the source code, and follow these steps.
 
     $ npm install
-    
-    # For Windows
-    $ npm run publish:win
-    
-    # For macOS
-    $ npm run publish:osx
+    $ npm run publish:linux
 
 The builds will be placed in the dist directory.
 
-## Translating
-
-Everyone is welcome to contribute translations. All translations files are put in `/app/langs/`. You can just modify and commit a new pull request.
-
-If you want to translate AriaNg to a new language, you can add language configuration to `/app/scripts/config/languages.js`, then copy `/i18n/en.sample.txt` to `/app/langs/` and rename it to the language code to be translated, then you can start the translation work.
-
 ## License
-[MIT](https://github.com/mayswind/AriaNg-Native/blob/master/LICENSE)
+[MIT](https://github.com/marsianna4ka/AriaNg-Native-Linux/blob/master/LICENSE)
