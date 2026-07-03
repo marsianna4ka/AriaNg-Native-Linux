@@ -14,10 +14,11 @@ AriaNg Native allows you to run AriaNg on Linux without any browser, and provide
     * Play sound after download finished
 2. Command line arguments, supporting creating new task by opening file
 3. File associations for .torrent/.metalink file
-4. Taskbar tray, supporting minimizing to tray
-5. Local file system operating support
-6. Executing custom command on startup
-7. Checking for updates on startup
+4. Magnet link protocol handling, supporting opening tasks from browser
+5. Taskbar tray, supporting minimizing to tray
+6. Local file system operating support
+7. Executing custom command on startup
+8. Checking for updates on startup
 
 ## Introduction of AriaNg
 Please visit [https://github.com/mayswind/AriaNg](https://github.com/mayswind/AriaNg) for more information.

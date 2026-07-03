@@ -193,6 +193,15 @@
             setMinimizedToTray: function (value) {
                 invokeMainProcessMethod('render-set-native-config-minimized-to-tray', value);
             },
+            setDefaultMagnetProtocolClient: function (value) {
+                return invokeMainProcessMethodSync('render-set-native-config-default-magnet-protocol-client', value);
+            },
+            getSystemMagnetProtocolStatusAsync: function () {
+                return invokeMainProcessMethodAsync('render-get-system-magnet-protocol-status');
+            },
+            openSystemDefaultAppsSetting: function () {
+                return invokeMainProcessMethodAsync('render-open-system-default-apps-setting');
+            },
             setExecCommandOnStartup: function (value) {
                 invokeMainProcessMethod('render-set-native-config-exec-command-on-startup', value);
             },

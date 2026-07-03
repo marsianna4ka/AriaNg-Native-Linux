@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const os = require('os');
 const path = require('path');
 const electron = require('electron');
@@ -14,7 +15,8 @@ const tray = require('./components/tray');
 const file = require('./lib/file');
 const page = require('./lib/page');
 const websocket = require('./lib/websocket');
-const process = require('./lib/process');
+const childProcess = require('./lib/process');
+const utils = require('./lib/utils');
 const ipcRender = require('./ipc/render-proecss');
 require('./ipc/main-process');
 
@@ -27,6 +29,22 @@ const singletonLock = app.requestSingleInstanceLock({
 
 let isEnableCloseToHide = function() {
     return (tray.isEnabled() || os.platform() === 'darwin') && config.minimizedToTray;
+};
+
+let registerMagnetProtocol = function () {
+    if (!config.defaultMagnetProtocolClient) {
+        return;
+    }
+
+    try {
+        if (app.isPackaged) {
+            app.setAsDefaultProtocolClient('magnet');
+        } else if (process.defaultApp && process.argv.length > 1) {
+            app.setAsDefaultProtocolClient('magnet', process.execPath, [path.resolve(process.argv[1])]);
+        }
+    } catch (ex) {
+        // Do Nothing
+    }
 };
 
 let executeCustomCommand = function () {
@@ -77,7 +95,7 @@ let executeCustomCommand = function () {
         });
     };
 
-    process.execCommandAsync(options);
+    childProcess.execCommandAsync(options);
 };
 
 let setWindowPositionAndSize = function () {
@@ -137,7 +155,7 @@ let main = function () {
     core.useCustomAppTitle = os.platform() === 'win32' && !cmd.argv.classic;
 
     const minimalWindow = !!cmd.argv.minimal;
-    let filePathInCommandLine = cmd.argv.file;
+    let filePathOrUrlInCommandLine = cmd.argv['file/url'];
 
     if (os.platform() === 'darwin') {
         app.on('will-finish-launching', () => {
@@ -158,7 +176,28 @@ let main = function () {
                         ipcRender.notifyRenderProcessNavigateToNewTask();
                     }
                 } else {
-                    filePathInCommandLine = filePath;
+                    filePathOrUrlInCommandLine = filePath;
+                }
+            });
+
+            app.on('open-url', (event, url) => {
+                event.preventDefault();
+
+                if (!url) {
+                    return;
+                }
+
+                if (core.mainWindow && core.mainWindow.webContents) {
+                    let location = page.parseLocationFromFullUrl(core.mainWindow.webContents.getURL());
+
+                    if (location.indexOf('/new') === 0) {
+                        ipcRender.notifyRenderProcessNewTaskFromText(url);
+                    } else {
+                        ipcRender.notifyRenderProcessNewNewTaskFromTextAfterViewLoaded(url);
+                        ipcRender.notifyRenderProcessNavigateToNewTask();
+                    }
+                } else {
+                    filePathOrUrlInCommandLine = url;
                 }
             });
         });
@@ -177,6 +216,8 @@ let main = function () {
     if (config.execCommandOnStartup) {
         executeCustomCommand();
     }
+
+    registerMagnetProtocol();
 
     app.on('window-all-closed', () => {
         app.quit();
@@ -207,7 +248,9 @@ let main = function () {
                 ipcRender.notifyRenderProcessChangeDevMode(core.isDevMode);
             }
 
-            if (secondInstanceArgv && secondInstanceArgv.file && file.isContainsSupportedFileArg(secondInstanceArgv.file)) {
+            const filePathOrUrlInSecondInstanceCommandLine = secondInstanceArgv ? secondInstanceArgv['file/url'] : null;
+
+            if (filePathOrUrlInSecondInstanceCommandLine && file.isContainsSupportedFileArg(filePathOrUrlInSecondInstanceCommandLine)) {
                 let location = '';
 
                 if (core.mainWindow.webContents) {
@@ -215,9 +258,22 @@ let main = function () {
                 }
 
                 if (location.indexOf('/new') === 0) {
-                    ipcRender.notifyRenderProcessNewTaskFromFile(secondInstanceArgv.file);
+                    ipcRender.notifyRenderProcessNewTaskFromFile(filePathOrUrlInSecondInstanceCommandLine);
                 } else {
-                    ipcRender.notifyRenderProcessNewNewTaskFromFileAfterViewLoaded(secondInstanceArgv.file);
+                    ipcRender.notifyRenderProcessNewNewTaskFromFileAfterViewLoaded(filePathOrUrlInSecondInstanceCommandLine);
+                    ipcRender.notifyRenderProcessNavigateToNewTask();
+                }
+            } else if (filePathOrUrlInSecondInstanceCommandLine && utils.isUrl(filePathOrUrlInSecondInstanceCommandLine)) {
+                let location = '';
+
+                if (core.mainWindow.webContents) {
+                    location = page.parseLocationFromFullUrl(core.mainWindow.webContents.getURL());
+                }
+
+                if (location.indexOf('/new') === 0) {
+                    ipcRender.notifyRenderProcessNewTaskFromText(filePathOrUrlInSecondInstanceCommandLine, true);
+                } else {
+                    ipcRender.notifyRenderProcessNewNewTaskFromTextAfterViewLoaded(filePathOrUrlInSecondInstanceCommandLine);
                     ipcRender.notifyRenderProcessNavigateToNewTask();
                 }
             }
@@ -254,8 +310,11 @@ let main = function () {
         menu.init();
         tray.init();
 
-        if (file.isContainsSupportedFileArg(filePathInCommandLine)) {
-            ipcRender.notifyRenderProcessNewNewTaskFromFileAfterViewLoaded(filePathInCommandLine);
+        if (file.isContainsSupportedFileArg(filePathOrUrlInCommandLine)) {
+            ipcRender.notifyRenderProcessNewNewTaskFromFileAfterViewLoaded(filePathOrUrlInCommandLine);
+            core.mainWindow.loadURL(page.getPageFullUrl(constants.ariaNgPageLocations.NewTask));
+        } else if (utils.isUrl(filePathOrUrlInCommandLine)) {
+            ipcRender.notifyRenderProcessNewNewTaskFromTextAfterViewLoaded(filePathOrUrlInCommandLine);
             core.mainWindow.loadURL(page.getPageFullUrl(constants.ariaNgPageLocations.NewTask));
         } else {
             core.mainWindow.loadURL(page.getPageFullUrl());

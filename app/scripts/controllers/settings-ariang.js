@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    angular.module('ariaNg').controller('AriaNgSettingsController', ['$rootScope', '$scope', '$routeParams', '$window', '$interval', '$timeout', '$filter', 'clipboard', 'ariaNgLanguages', 'ariaNgSupportedAudioFileTypes', 'ariaNgCommonService', 'ariaNgVersionService', 'ariaNgKeyboardService', 'ariaNgNotificationService', 'ariaNgLocalizationService', 'ariaNgLogService', 'ariaNgFileService', 'ariaNgSettingService', 'ariaNgMonitorService', 'ariaNgTitleService', 'aria2SettingService', 'ariaNgNativeElectronService', function ($rootScope, $scope, $routeParams, $window, $interval, $timeout, $filter, clipboard, ariaNgLanguages, ariaNgSupportedAudioFileTypes, ariaNgCommonService, ariaNgVersionService, ariaNgKeyboardService, ariaNgNotificationService, ariaNgLocalizationService, ariaNgLogService, ariaNgFileService, ariaNgSettingService, ariaNgMonitorService, ariaNgTitleService, aria2SettingService, ariaNgNativeElectronService) {
+    angular.module('ariaNg').controller('AriaNgSettingsController', ['$rootScope', '$scope', '$routeParams', '$window', '$interval', '$timeout', '$q', '$filter', 'clipboard', 'ariaNgLanguages', 'ariaNgSupportedAudioFileTypes', 'ariaNgCommonService', 'ariaNgVersionService', 'ariaNgKeyboardService', 'ariaNgNotificationService', 'ariaNgLocalizationService', 'ariaNgLogService', 'ariaNgFileService', 'ariaNgSettingService', 'ariaNgMonitorService', 'ariaNgTitleService', 'aria2SettingService', 'ariaNgNativeElectronService', function ($rootScope, $scope, $routeParams, $window, $interval, $timeout, $q, $filter, clipboard, ariaNgLanguages, ariaNgSupportedAudioFileTypes, ariaNgCommonService, ariaNgVersionService, ariaNgKeyboardService, ariaNgNotificationService, ariaNgLocalizationService, ariaNgLogService, ariaNgFileService, ariaNgSettingService, ariaNgMonitorService, ariaNgTitleService, aria2SettingService, ariaNgNativeElectronService) {
         var extendType = $routeParams.extendType;
         var lastRefreshPageNotification = null;
 
@@ -39,6 +39,7 @@
                 config.afterMainWindowClosed = 'minimize-to-tray';
             }
 
+            config.defaultMagnetProtocolClient = !!originalConfig.defaultMagnetProtocolClient;
             config.execCommandOnStartup = originalConfig.execCommandOnStartup;
             config.execCommandArgumentsOnStartup = originalConfig.execCommandArgumentsOnStartup;
 
@@ -67,6 +68,7 @@
         var importAllSettings = function (settings) {
             importNativeSetting(settings, 'defaultPosition', $scope.setDefaultPosition);
             importNativeSetting(settings, 'afterMainWindowClosed', $scope.setAfterMainWindowClosed);
+            importNativeSetting(settings, 'defaultMagnetProtocolClient', $scope.setDefaultMagnetProtocolClient);
             importNativeSetting(settings, 'execCommandOnStartup', $scope.setExecCommandOnStartup);
             importNativeSetting(settings, 'execCommandArgumentsOnStartup', $scope.setExecCommandArgumentsOnStartup);
             importNativeSetting(settings, 'execCommandOptionsOnStartup', $scope.setExecCommandOptionsOnStartup);
@@ -149,6 +151,7 @@
             isSupportReconnect: aria2SettingService.canReconnect(),
             isSupportBlob: ariaNgFileService.isSupportBlob(),
             isSupportDarkMode: ariaNgSettingService.isBrowserSupportDarkMode(),
+            magnetProtocolStatus: null,
             importSettings: null,
             exportSettings: null,
             exportSettingsCopied: false,
@@ -423,6 +426,18 @@
             ariaNgNativeElectronService.setDefaultPosition(value);
         }
 
+        $scope.setDefaultMagnetProtocolClient = function (value) {
+            var status = ariaNgNativeElectronService.setDefaultMagnetProtocolClient(value);
+
+            if (status) {
+                $scope.context.magnetProtocolStatus = status;
+            }
+
+            if (value && status && !status.isDefault) {
+                ariaNgCommonService.showInfo('Default Magnet Link Downloader', 'AriaNg Native settings have been enabled, but it is not currently set as the system\'s default magnet link downloader. Please open your system settings to complete the setup.');
+            }
+        };
+
         $scope.setExecCommandOnStartup = function (value) {
             ariaNgNativeElectronService.setExecCommandOnStartup(value);
         };
@@ -437,6 +452,16 @@
             } else if (value === 'as-detached-process') {
                 ariaNgNativeElectronService.setExecDetachedCommandOnStartup(true);
             }
+        };
+
+        $scope.openSystemDefaultAppsSetting = function () {
+            ariaNgNativeElectronService.openSystemDefaultAppsSetting().then(function (success) {
+                if (!success) {
+                    ariaNgCommonService.showError('This feature is not supported on your system.');
+                }
+            }).catch(function () {
+                ariaNgCommonService.showError('Failed to open system settings.');
+            });
         };
 
         $scope.browseAndSetExecCommandOnStartup = function () {
@@ -612,6 +637,13 @@
 
         angular.element('[data-toggle="popover"]').popover();
 
-        $rootScope.loadPromise = $timeout(function () {}, 100);
+        $rootScope.loadPromise = $q.all([
+            $timeout(function () {}, 100),
+            ariaNgNativeElectronService.getSystemMagnetProtocolStatusAsync().then(function (status) {
+                if (status) {
+                    $scope.context.magnetProtocolStatus = status;
+                }
+            })
+        ]);
     }]);
 }());

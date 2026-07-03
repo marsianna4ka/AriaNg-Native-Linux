@@ -30,7 +30,8 @@
                         </div>
                         <div class="setting-value col-sm-8">
                             <span ng-bind="'AriaNg Native ' + context.ariaNgNativeVersion + (context.buildCommit ? ' (' + context.buildCommit + ')' : '')"></span>
-                            <button class="btn btn-xs btn-default" ng-click="checkUpdate()" ng-disabled="context.isCurrentLatestVersion" promise-btn>
+                            <button class="btn btn-xs btn-default" ng-class="{'btn-disabled': context.isCurrentLatestVersion}"
+                                    ng-disabled="context.isCurrentLatestVersion" ng-click="checkUpdate()" promise-btn>
                                 <span ng-bind="(context.isCurrentLatestVersion ? 'Latest Version' : 'Check Update') | translate" translate>Check Update</span>
                             </button>
                             <span class="multi-line" ng-if="!context.ariaNgVerboseVersionCollapsed">
@@ -173,6 +174,7 @@
                                         <span translate>Browse</span>
                                     </button>
                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                            ng-class="{'btn-disabled': !context.settings.playSoundAfterDownloadFinished}"
                                             ng-disabled="!context.settings.playSoundAfterDownloadFinished">
                                         <span class="caret"></span>
                                     </button>
@@ -391,6 +393,25 @@
                     </div>
                     <div class="row">
                         <div class="setting-key setting-key-without-desc col-sm-4">
+                            <span translate>Set as Default Magnet Link Downloader</span>
+                        </div>
+                        <div class="setting-value col-sm-8">
+                            <div ng-class="{'input-group': context.nativeSettings.defaultMagnetProtocolClient && (!context.magnetProtocolStatus || !context.magnetProtocolStatus.isDefault)}">
+                                <select class="form-control" style="width: 100%;" ng-model="context.nativeSettings.defaultMagnetProtocolClient"
+                                        ng-change="setDefaultMagnetProtocolClient(context.nativeSettings.defaultMagnetProtocolClient)">
+                                    <option ng-value="true" ng-bind="((context.nativeSettings.defaultMagnetProtocolClient && (!context.magnetProtocolStatus || !context.magnetProtocolStatus.isDefault)) ? 'True (Not the system\'s default downloader)' : 'True') | translate">True</option>
+                                    <option ng-value="false" translate>False</option>
+                                </select>
+                                <div class="input-group-btn" ng-if="context.nativeSettings.defaultMagnetProtocolClient && (!context.magnetProtocolStatus || !context.magnetProtocolStatus.isDefault)">
+                                    <button type="button" class="btn btn-default" ng-click="openSystemDefaultAppsSetting()">
+                                        <span translate>Open System Settings</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="setting-key setting-key-without-desc col-sm-4">
                             <span translate>Execute Command on Startup</span>
                         </div>
                         <div class="setting-value col-sm-8">
@@ -571,7 +592,8 @@
                     <div class="row tip no-background no-hover">
                         <span class="asterisk">*</span>
                         <span translate>Changes to the settings take effect after refreshing page.</span>
-                        <button class="btn btn-xs btn-default" ng-disabled="setting.isDefault" ng-click="setDefaultRpcSetting(setting)">
+                        <button class="btn btn-xs btn-default" ng-class="{'btn-disabled': setting.isDefault}"
+                                ng-disabled="setting.isDefault" ng-click="setDefaultRpcSetting(setting)">
                             <span translate>Activate</span>
                         </button>
                     </div>
@@ -602,7 +624,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" ng-disabled="!context.importSettings || !context.importSettings.length"
+                    <button type="button" class="btn btn-primary" ng-class="{'btn-disabled': !context.importSettings || !context.importSettings.length}"
+                            ng-disabled="!context.importSettings || !context.importSettings.length"
                             ng-click="importSettings(context.importSettings)" translate>Import</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal" translate>Cancel</button>
                 </div>
