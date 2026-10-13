@@ -1,7 +1,7 @@
 {
     "appId": "net.mayswind.ariang",
     "productName": "AriaNg Native",
-    "copyright": "Copyright (c) 2017-2022 MaysWind (i@mayswind.net)",
+    "copyright": "Copyright (c) 2017-2026 MaysWind (i@mayswind.net)",
     "artifactName": "AriaNg_Native-${version}-macOS-${arch}.${ext}",
     "files": [
         "!build.json",
@@ -60,7 +60,10 @@
                 "icon": "assets/AriaNg_Metalink.icns"
             }
         ],
-        "darkModeSupport": true
+        "darkModeSupport": true,
+        "extendInfo": {
+            "NSLocalNetworkUsageDescription": "AriaNg Native needs local network access to connect to your aria2 RPC server."
+        }
     },
     "dmg": {
         "icon": "assets/AriaNg.icns"
