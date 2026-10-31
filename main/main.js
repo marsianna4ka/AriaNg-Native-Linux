@@ -2,7 +2,6 @@
 
 const path = require('path');
 const os = require('os');
-const path = require('path');
 const electron = require('electron');
 const electronLocalshortcut = require('electron-localshortcut');
 
